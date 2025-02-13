@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# SQL Server Management Studio Solution File, Format Version 20.00
+VisualStudioVersion = 15.0.28307.421
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "Scripts SQL Processos Temporarios", "Scripts SQL Processos Temporarios.ssmssqlproj", "{23EAAED5-7E7E-427A-BC98-7D7B7252619E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|Default = Default|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{23EAAED5-7E7E-427A-BC98-7D7B7252619E}.Default|Default.ActiveCfg = Default
+		{0025AAE1-DB98-4E54-8097-5749AC0B6409}.Default|Default.ActiveCfg = Default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E12A97EC-079A-4430-8100-992642B06B09}
+	EndGlobalSection
+EndGlobal
