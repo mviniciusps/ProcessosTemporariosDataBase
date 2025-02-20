@@ -1,12 +1,11 @@
 /*------------------------------------------------------------
-Autor   : Marcus Paiva
-Banco	: ProcessosTemporarios
-Objetivo: Transferir dados da planilha
-Data	: 01/02/2025
+Author   : Marcus Paiva
+DataBase : ProcessosTemporarios
+Objective: Transfer datas from spreadsheet
+Date	 : 01/02/2025
 ------------------------------------------------------------*/
-
 CREATE DATABASE ProcessosTemporarios
--- arquivo onde contem os metadados e objetos principais (tabelas, indices, etc)
+-- Metadata file that contains main objects (tables, indexes, etc)
 ON
 (
 	NAME = ProcessosTemporarios_dados,
@@ -15,7 +14,7 @@ ON
 	MAXSIZE = UNLIMITED,
 	FILEGROWTH = 10MB
 )
--- arquivo de log de transações (recupera caso haja falha)
+-- transaction log file (recovery if it makes mistake)
 LOG ON
 (
 	NAME = ProcessosTemporarios_log,
@@ -23,187 +22,178 @@ LOG ON
 	SIZE = 50MB,
 	MAXSIZE = 1GB,
 	FILEGROWTH = 5MB
-)
+);
+GO
 
---Consultar todos os Sequences
-SELECT * FROM sys.sequences
+USE ProcessosTemporarios; -- select database
+GO
+-------------------------------------------------------------------------- END DATABASE
+/*
+*/
+-------------------------------------------------------------------------- BEGIN tCeMercante
+--START CREATING tCeMercante TABLE
 
---Deletar Sequences
-DROP SEQUENCE seqID_CE_ID;
-
-
---Ver quantas transações estão abertas
-SELECT @@TRANCOUNT
-
-
-USE ProcessosTemporarios
-
---Sequenciador para o ID da Tabela TB_CE_MERCANTE
+--sequence as id for table
 CREATE SEQUENCE seqID_CE_ID
 	AS INT
 	START WITH 0
-	INCREMENT BY 1
+	INCREMENT BY 1;
 GO
 
-EXECUTE sp_rename 'TB_CE_MERCANTE', 'tCeMercante'
---Criar tabela TB_CE_MERCANTE
+--creating tCeMercante using standard way
 BEGIN TRANSACTION
 
 	CREATE TABLE tCeMercante
 	(
-		CE_ID INT NOT NULL DEFAULT (NEXT VALUE FOR seqID_CE_ID), --PK
-		Status_CE VARCHAR(15) NOT NULL,
-		Numero_CE CHAR(15), --UNIQUE
-		CONSTRAINT PK_CE_ID PRIMARY KEY(CE_ID),
-		CONSTRAINT UQ_NUMERO_CE UNIQUE(Numero_CE)
-	)
+		iCEID INT NOT NULL DEFAULT (NEXT VALUE FOR seqID_CE_ID), --primary key
+		cStatusCE VARCHAR(15) NOT NULL,
+		cNumeroCE CHAR(15), --accept unique values
+		CONSTRAINT PK_CE_ID PRIMARY KEY(iCEID),
+		CONSTRAINT UQ_NUMERO_CE UNIQUE(cNumeroCE)
+	);
 
-	SELECT * FROM  tCeMercante--Testar tabela TB_CE_MERCANTE criada
+	SELECT * FROM  tCeMercante;--select table just be created
 
-	COMMIT
+	--COMMIT
 	--ROLLBACK
 GO
---Fim da criaçao TB_CE_MERCANTE
+-------------------------------------------------------------------------- END tCeMercante
+/*
+*/
+-------------------------------------------------------------------------- BEGIN tRecintoAlfandegado
+--START CREATING tRecintoAlfandegado TABLE
 
-
---Sequenciador para o ID da Tabela TB_RECINTO_ALFANDEGADO
+--sequence as id for table
 CREATE SEQUENCE seqRecintoID
 	AS INT
 	START WITH 0
-	INCREMENT BY 1
+	INCREMENT BY 1;
 GO
 
-DROP SEQUENCE seqRecintoID;
-
-EXECUTE sp_rename 'TB_RECINTO_ALFANDEGADO', 'tRecintoAlfandegado'
-
---Criar tabela TB_RECINTO_ALFANDEGADO
+--creating tRecintoAlfandegado using standard way
 BEGIN TRANSACTION
 
 	CREATE TABLE tRecintoAlfandegado
 	(
-		RecintoID INT NOT NULL DEFAULT(NEXT VALUE FOR seqRecintoID), --PK
-		NumeroRecintoAduaneiro CHAR(7) NOT NULL, --UNIQUE
-		NomeRecinto VARCHAR(100) NOT NULL,
-		CidadeRecinto VARCHAR(100) NOT NULL,
-		EstadoRecinto VARCHAR(100) NOT NULL,
-		UnidadeReceitaFederal CHAR(7) NOT NULL,
-		CONSTRAINT PK_RECINTO_ID PRIMARY KEY(RecintoID),
-		CONSTRAINT UQ_NUMERO_RECINTO UNIQUE(NumeroRecintoAduaneiro)
-	)
+		iRecintoID INT NOT NULL DEFAULT(NEXT VALUE FOR seqRecintoID), --primary key
+		cNumeroRecintoAduaneiro CHAR(7) NOT NULL, --unique values
+		cNomeRecinto VARCHAR(255),
+		cCidadeRecinto VARCHAR(100),
+		cEstadoRecinto VARCHAR(100),
+		cUnidadeReceitaFederal CHAR(7) NOT NULL,
+		CONSTRAINT PK_RECINTO_ID PRIMARY KEY(iRecintoID),
+		CONSTRAINT UQ_NUMERO_RECINTO UNIQUE(cNumeroRecintoAduaneiro)
+	);
 
-	SELECT * FROM tRecintoAlfandegado
+	SELECT * FROM tRecintoAlfandegado--select table just be created
 	
-	COMMIT
+	--COMMIT
 	--ROLLBACK
 GO
+-------------------------------------------------------------------------- END tRecintoAlfandegado
+/*
+*/
+-------------------------------------------------------------------------- BEGIN tApoliceSeguroGarantia
+--START CREATING tApoliceSeguroGarantia TABLE
 
-DROP TABLE tRecintoAlfandegado
---Fim da criaçao TB_RECINTO_ALFANDEGADO
-
-
-
-
---Sequenciador para o ID da Tabela TB_APOLICE_SEGURO_GARANTIA
+--sequence as id for table
 CREATE SEQUENCE seqApoliceID
 	AS INT
 	START WITH 0
-	INCREMENT BY 1
+	INCREMENT BY 1;
 GO
 
-EXECUTE sp_rename 'TB_APOLICE_SEGURO_GARANTIA', 'tApoliceSeguroGarantia'
-
--- Criar tabela TB_APOLICE_SEGURO_GARANTIA (dinamico)
+--creating tApoliceSeguroGarantia using dinamic way with variables
 BEGIN TRANSACTION
 
-SET NOCOUNT ON
+SET NOCOUNT ON;
+
 	BEGIN TRY
 
-		DECLARE @NomeTabelaApolice NVARCHAR(128)
-		SET @NomeTabelaApolice = 'TB_APOLICE_SEGURO_GARANTIA'
+		DECLARE @NomeTabelaApolice NVARCHAR(128);
+		SET @NomeTabelaApolice = 'tApoliceSeguroGarantia';
 
 
-		DECLARE @SQLCriarTabelaApolice NVARCHAR(MAX)
+		DECLARE @SQLCriarTabelaApolice NVARCHAR(MAX);
 		SET @SQLCriarTabelaApolice = 'CREATE TABLE ' + @NomeTabelaApolice + '(
-			ApoliceID INT NOT NULL DEFAULT(NEXT VALUE FOR seqApoliceID), --PK
-			NumeroApolice VARCHAR(100),
-			VencimentoGarantia DATE NOT NULL,
-			RecintoID INT NOT NULL, --FK
-			CONSTRAINT PK_APOLICE_ID PRIMARY KEY(ApoliceID),
-			CONSTRAINT FK_RECINTO_ID FOREIGN KEY(RecintoID) REFERENCES TB_RECINTO_ALFANDEGADO(RecintoID)
-		)'
+			iApoliceID INT NOT NULL DEFAULT(NEXT VALUE FOR seqApoliceID), --primary key
+			cNumeroApolice VARCHAR(100),
+			cVencimentoGarantia DATE NOT NULL,
+			iRecintoID INT NOT NULL, --foreign key
+			CONSTRAINT PK_APOLICE_ID PRIMARY KEY(iApoliceID),
+			CONSTRAINT FK_RECINTO_ID FOREIGN KEY(iRecintoID) REFERENCES tRecintoAlfandegado(iRecintoID)
+		)';
 
-		EXEC sp_executesql @SQLCriarTabelaApolice
+		EXEC sp_executesql @SQLCriarTabelaApolice;
 
-		DECLARE @mensagemCriacao NVARCHAR(255)
-		SET @mensagemCriacao = 'Tabela ' + @NomeTabelaApolice + ' criada com sucesso'
+		DECLARE @mensagemCriacao NVARCHAR(255);
+		SET @mensagemCriacao = 'Table' + @NomeTabelaApolice + ' created!';
 
 		RAISERROR( @mensagemCriacao, 10, 1) WITH NOWAIT;
 
-		COMMIT
+		COMMIT;
 
 	END TRY
 	BEGIN CATCH
 		
-		ROLLBACK
+		ROLLBACK;
 
 	END CATCH
 
-	SELECT *  FROM TB_APOLICE_SEGURO_GARANTIA
+	SELECT *  FROM tApoliceSeguroGarantia;
 GO
---Fim da criaçao TB_APOLICE_SEGURO_GARANTIA
+-------------------------------------------------------------------------- END tApoliceSeguroGarantia
+/*
+*/
+-------------------------------------------------------------------------- BEGIN tContrato
+--START CREATING tContrato TABLE
 
-
-
-
---Sequenciador para o ID da Tabela TB_CONTRATO
+--sequence as id for table
 CREATE SEQUENCE seqContratoID
 	AS INT
 	START WITH 0
-	INCREMENT BY 1
+	INCREMENT BY 1;
 GO
 
-EXECUTE sp_rename 'TB_CONTRATO', 'tContrato'
-
-
--- Criar tabela TB_CONTRATO (dinamico)
+--creating tContrato using dinamic way with variables
 BEGIN TRANSACTION
 
-	SET NOCOUNT ON
-	DECLARE @nRetorno INT = 0
+	SET NOCOUNT ON;
+
+	DECLARE @nRetorno INT = 0;
 
 	BEGIN TRY
 
 		IF @@TRANCOUNT > 1
 		BEGIN
-			RAISERROR('Há transações abertas, fechando transações, execute o codigo novamente...',10,1);
+			RAISERROR('There are open transactions, closing all...',10,1);
 			ROLLBACK;
 			RETURN;
 		END;
 
 		DECLARE @NomeTabela NVARCHAR(128);
-		SET @NomeTabela = 'TB_CONTRATO';
+		SET @NomeTabela = 'tContrato';
 
-		RAISERROR('Tabela %s sendo criada...', 10, 1, @NomeTabela) WITH NOWAIT;
+		RAISERROR('Table %s is being created...', 10, 1, @NomeTabela) WITH NOWAIT;
 
 		WAITFOR DELAY '00:00:05';
 
 		DECLARE @SQLCriarTabela NVARCHAR(MAX);
 		SET @SQLCriarTabela = 'CREATE TABLE ' + @NomeTabela + '(
-			ContratoID INT NOT NULL DEFAULT(NEXT VALUE FOR seqContratoID), --PK
-			NumeroNomeContrato VARCHAR(100) NOT NULL,
-			ContratoTipo VARCHAR(20) NOT NULL,
-			ContratoDataAssinatura DATE NOT NULL,
-			ContratoVencimento DATE NOT NULL, --Procedure UPDATE em dias
-			NumeroProrrogacao INT,
+			iContratoID INT NOT NULL DEFAULT(NEXT VALUE FOR seqContratoID), --primary key
+			cNumeroNomeContrato VARCHAR(100) NOT NULL,
+			cContratoTipo VARCHAR(20) NOT NULL,
+			dContratoDataAssinatura DATE,
+			dContratoVencimento DATE NOT NULL, --Procedure update using days
+			iNumeroProrrogacao INT,
 			CONSTRAINT PK_CONTRATO_ID PRIMARY KEY(ContratoID)
-		)'
+		)';
 				        
 		EXEC sp_executesql @SQLCriarTabela;
 
 		WAITFOR DELAY '00:00:05';
 		
-		RAISERROR( 'Tabela %s criada com sucesso', 10, 1, @NomeTabela) WITH NOWAIT;
+		RAISERROR( 'Table %s created', 10, 1, @NomeTabela) WITH NOWAIT;
 
 		COMMIT;
 
@@ -211,58 +201,60 @@ BEGIN TRANSACTION
 	BEGIN CATCH
 		
 		IF @@TRANCOUNT > 0
-		ROLLBACK
+			ROLLBACK;
 
-		EXECUTE @nRetorno = stp_ManipulaErro
+		EXECUTE @nRetorno = stp_ManipulaErro;
 
 	END CATCH
 GO
+-------------------------------------------------------------------------- END tContrato
+/*
+*/
+-------------------------------------------------------------------------- BEGIN tCNPJ
+--START CREATING tContrato TABLE
 
-
-
---Sequenciador para o ID Tabela TB_CNPJ
+--sequence as id for table
 CREATE SEQUENCE seqCNPJID
 	AS INT
 	START WITH 0
 	INCREMENT BY 1
 GO
 
---Criar Tabela tCNPJ (dinamico)
+--creating tContrato using dinamic way with variables
 BEGIN TRANSACTION
 
-	SET NOCOUNT ON
-	
+	SET NOCOUNT ON;	
 
 	BEGIN TRY
 
 		IF @@TRANCOUNT > 1
 		BEGIN
-			RAISERROR('Há transações abertas, fechando transações, execute o codigo novamente...',10,1);
+			RAISERROR('There are open transactions, closing all...',10,1);
 			ROLLBACK;
 			RETURN;
 		END;
 				
-		DECLARE @nRetorno INT = 0
-		DECLARE @NomeTabela NVARCHAR(128)
+		DECLARE @nRetorno INT = 0;
+		DECLARE @NomeTabela NVARCHAR(128);
 		SET @NomeTabela = 'tCNPJ';
 
-		RAISERROR('Tabela %s sendo criada...', 10, 1, @NomeTabela) WITH NOWAIT;
+		RAISERROR('table %s is been created...', 10, 1, @NomeTabela) WITH NOWAIT;
 
 		WAITFOR DELAY '00:00:05';
 
 		DECLARE @SQLCriarTabela NVARCHAR(MAX);
 		SET @SQLCriarTabela = 'CREATE TABLE ' + @NomeTabela + '(
-			iCNPJID INT NOT NULL DEFAULT(NEXT VALUE FOR seqCNPJID), --PK
-			cNumeroInscricao CHAR(14) NOT NULL, --UNIQUE
+			iCNPJID INT NOT NULL DEFAULT(NEXT VALUE FOR seqCNPJID), --primary key
+			cNumeroInscricao CHAR(14) NOT NULL, --unique values
 			cNomeEmpresarial VARCHAR(100) NOT NULL,
 			cLogradouro VARCHAR(100) NOT NULL,
-			cNumeroLogradouro VARCHAR(10) NULL,
-			cBairroLogradouro VARCHAR(50) NULL,
+			cNumeroLogradouro VARCHAR(10),
+			cBairroLogradouro VARCHAR(50),
 			cCidadeLogradouro VARCHAR(50) NOT NULL,
 			cEstadoLogradouro VARCHAR(50) NOT NULL,
 			CONSTRAINT PK_CNPJ_ID PRIMARY KEY(iCNPJID),
 			CONSTRAINT UQ_CNPJ_INSCRICAO UNIQUE(cNumeroInscricao)
-		)'
+		)';
 				        
 		EXECUTE sp_executesql @SQLCriarTabela;
 
@@ -276,37 +268,41 @@ BEGIN TRANSACTION
 	BEGIN CATCH
 		
 		IF @@TRANCOUNT > 0
-		ROLLBACK
+		ROLLBACK;
 
-		EXECUTE stp_ManipulaErro
+		EXECUTE stp_ManipulaErro;
 
 	END CATCH
 GO
+-------------------------------------------------------------------------- END tCNPJ
+/*
+*/
+-------------------------------------------------------------------------- BEGIN tDeclaracao
+--START CREATING tContrato TABLE
 
-
---Sequenciador Tabela tDeclaracao
+--sequence as id for table
 CREATE SEQUENCE seqDeclaracaoID
 	AS INT
 	START WITH 0
-	INCREMENT BY 1
+	INCREMENT BY 1;
 GO
 
---Criar tabela tDeclaracao
+--creating tRecintoAlfandegado using standard way
 CREATE TABLE tDeclaracao
 (
-	iDeclaracaoID INT NOT NULL DEFAULT(NEXT VALUE FOR seqDeclaracaoID),
-	cNumeroDeclaracao VARCHAR(12) NOT NULL, -- CHECK/IF/UNIQUE
-	iCNPJID INT NOT NULL, --FK
-	cReferenciaBraslog CHAR(13) NOT NULL, --UNIQUE
-	cReferenciaCliente VARCHAR(20) NOT NULL,
+	iDeclaracaoID INT NOT NULL DEFAULT(NEXT VALUE FOR seqDeclaracaoID), --primary key
+	cNumeroDeclaracao VARCHAR(12) NOT NULL, -- check using caracteres length and unique values
+	iCNPJID INT NOT NULL, --foreign key
+	cReferenciaBraslog CHAR(13) NOT NULL, --unique values
+	cReferenciaCliente VARCHAR(100),
 	dDataRegistroDeclaracao DATE NOT NULL,
 	dDataDesembaracoDeclaracao DATE NOT NULL,
-	iCEID INT, --FK
-	iRecintoID INT NOT NULL, --FK
-	cNumeroDOSSIE CHAR(15), --UNIQUE
-	cNumeroProcessoAdministrativo CHAR(15),
-	iContratoID INT, --FK
-	iApoliceID INT, --FK
+	iCEID INT, --foreign key
+	iRecintoID INT NOT NULL, --foreign key
+	cNumeroDOSSIE CHAR(15),
+	cNumeroProcessoAdministrativo CHAR(15), --unique values (not allow cause there so many values null)
+	iContratoID INT, --foreign key
+	iApoliceID INT, --foreign key
 	cModal VARCHAR(15) NOT NULL,
 	CONSTRAINT PK_DECLARACAO_ID PRIMARY KEY(iDeclaracaoID),
 	CONSTRAINT CHK_NUMERODECLARACAO_LENGTH CHECK(LEN(cNumeroDeclaracao) BETWEEN 10 AND 12),
@@ -314,10 +310,15 @@ CREATE TABLE tDeclaracao
 	CONSTRAINT FK_DECLARACAO_CE_ID FOREIGN KEY(iCEID) REFERENCES tCeMercante(iCEID),
 	CONSTRAINT FK_DECLARACAO_RECINTO_ID FOREIGN KEY(iRecintoID) REFERENCES tRecintoAlfandegado(iRecintoID),
 	CONSTRAINT FK_CONTRATO_ID FOREIGN KEY(iContratoID) REFERENCES tContrato(iContratoID),
-	CONSTRAINT FK_APOLICE_ID FOREIGN KEY(iApoliceID) REFERENCES tApoliceSeguroGarantia(iApoliceID)
-)
-
---Criar Tabela para armazenar os erros
+	CONSTRAINT FK_APOLICE_ID FOREIGN KEY(iApoliceID) REFERENCES tApoliceSeguroGarantia(iApoliceID),
+	CONSTRAINT UQ_NUMERO_DECLARACAO UNIQUE(cNumeroDeclaracao),
+	CONSTRAINT UQ_REF_BRASLOG UNIQUE(cReferenciaBraslog)
+);
+-------------------------------------------------------------------------- END tDeclaracao
+/*
+*/
+-------------------------------------------------------------------------- BEGIN tLOGEventos
+--Table created to store errors
 DROP TABLE IF EXISTS tLOGEventos
 GO
 

@@ -96,6 +96,8 @@ BEGIN
 END
 GO
 
+EXECUTE stp_BackupProcessosTemporarios;
+
 /*--------------------------------------------------------------------------------------------        
 Tipo Objeto: Store Procedure
 Objeto     : stp_inserirDadosTabelaRecintoAlfandegado
@@ -877,3 +879,5 @@ DELETE FROM tDeclaracao;
 ALTER SEQUENCE seqDeclaracaoID RESTART WITH 1;
 
 SELECT * FROM tDeclaracao;
+
+--Procedure update using days
